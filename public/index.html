@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MyRegister</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <div class="top-bar">
+        <button id="mode-button" class="mode-button" type="button" aria-label="Scegli Anno">
+          <span id="mode-label">2025/2026 · Scuola</span>
+        </button>
+        <button id="language-button" class="language-button" type="button" aria-label="Choose Language">
+          <span id="language-code">IT</span>
+        </button>
+      </div>
+
+      <section class="hero-section" aria-labelledby="page-title">
+        <div>
+          <h1 id="page-title">MyRegister</h1>
+          <p class="hero-copy" data-i18n="heroCopy">
+            Voti, materie e medie in un registro locale semplice.
+          </p>
+        </div>
+        <div class="total-panel" aria-label="Media Totale">
+          <span class="panel-label" data-i18n="totalAverage">Media Totale</span>
+          <strong id="total-average">--</strong>
+          <span id="scale-context">Voto in decimi</span>
+          <span id="total-context">Nessun Voto Registrato</span>
+        </div>
+      </section>
+
+      <section class="toolbar-section" aria-label="Azioni Principali">
+        <form id="subject-form" class="tool-form">
+          <div class="field field-grow">
+            <label for="subject-name" data-i18n="newSubject">Nuova Materia</label>
+            <input id="subject-name" name="name" type="text" data-i18n-placeholder="subjectPlaceholder" placeholder="Es. Matematica" required />
+          </div>
+          <button class="primary-button" type="submit" data-i18n="create">Crea</button>
+        </form>
+
+        <form id="grade-form" class="tool-form grade-form">
+          <div class="field subject-picker-field">
+            <label for="grade-subject-button" data-i18n="subject">Materia</label>
+            <button id="grade-subject-button" class="picker-button" type="button">
+              <span id="grade-subject-label">Crea Prima Una Materia</span>
+              <span class="picker-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <input id="grade-subject" name="subjectId" type="hidden" />
+          </div>
+          <div class="field field-small">
+            <label for="grade-value" data-i18n="grade">Voto</label>
+            <input id="grade-value" name="value" type="number" min="0" step="0.01" required />
+          </div>
+          <div class="field field-small">
+            <label for="grade-weight" data-i18n="weight">Peso %</label>
+            <input id="grade-weight" name="weight" type="number" min="0.01" step="0.01" placeholder="100" />
+          </div>
+          <div class="field date-field">
+            <label for="grade-date" data-i18n="gradeDate">Data Voto</label>
+            <input id="grade-date" name="gradeDate" type="date" />
+          </div>
+          <div class="field field-grow description-field">
+            <label for="grade-description" data-i18n="description">Descrizione</label>
+            <input id="grade-description" name="description" type="text" data-i18n-placeholder="descriptionPlaceholder" placeholder="Es. Verifica scritta" />
+          </div>
+          <button class="secondary-button" type="submit" data-i18n="add">Aggiungi</button>
+        </form>
+      </section>
+
+      <section class="chart-panel" aria-labelledby="chart-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow" data-i18n="trend">Andamento</p>
+            <h2 id="chart-title" data-i18n="radarSubjects">Radar Materie</h2>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="radar-chart" width="900" height="420" aria-label="Grafico Radar Delle Materie"></canvas>
+          <p id="chart-empty" class="empty-state" data-i18n="radarEmpty">Aggiungi almeno tre materie con voti per vedere il radar.</p>
+        </div>
+      </section>
+
+      <section class="subjects-section" aria-labelledby="subjects-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Home</p>
+            <h2 id="subjects-title" data-i18n="allSubjects">Tutte Le Materie</h2>
+          </div>
+          <span id="subjects-count" class="muted-pill">0 Materie</span>
+        </div>
+        <div id="subjects-list" class="subjects-list"></div>
+      </section>
+    </main>
+
+    <div id="subject-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+      <article class="modal-panel">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow" data-i18n="subjectDetail">Dettaglio Materia</p>
+            <h2 id="detail-title">Materia</h2>
+          </div>
+          <button id="close-detail" class="icon-button" type="button" aria-label="Chiudi Dettaglio">×</button>
+        </div>
+        <div id="detail-content" class="detail-content"></div>
+      </article>
+    </div>
+
+    <div id="subject-picker-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="subject-picker-title">
+      <article class="modal-panel picker-panel">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow" data-i18n="gradeSubject">Materia Voto</p>
+            <h2 id="subject-picker-title" data-i18n="chooseSubject">Scegli Materia</h2>
+          </div>
+          <button id="close-subject-picker" class="icon-button" type="button" aria-label="Chiudi Scelta Materia">×</button>
+        </div>
+        <div id="subject-picker-list" class="choice-list"></div>
+      </article>
+    </div>
+
+    <div id="grade-edit-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="grade-edit-title">
+      <article class="modal-panel picker-panel">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow" data-i18n="editGrade">Modifica Voto</p>
+            <h2 id="grade-edit-title" data-i18n="grade">Voto</h2>
+          </div>
+          <button id="close-grade-edit" class="icon-button" type="button" aria-label="Chiudi Modifica Voto">×</button>
+        </div>
+        <form id="grade-edit-form" class="modal-form">
+          <input id="grade-edit-id" type="hidden" />
+          <input id="grade-edit-subject-id" type="hidden" />
+          <div class="field">
+            <label for="grade-edit-description" data-i18n="description">Descrizione</label>
+            <input id="grade-edit-description" type="text" data-i18n-placeholder="descriptionPlaceholder" placeholder="Es. Verifica scritta" />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="grade-edit-value" data-i18n="grade">Voto</label>
+              <input id="grade-edit-value" type="number" min="0" step="0.01" required />
+            </div>
+            <div class="field">
+              <label for="grade-edit-weight" data-i18n="weight">Peso %</label>
+              <input id="grade-edit-weight" type="number" min="0.01" step="0.01" required />
+            </div>
+          </div>
+          <div class="field">
+            <label for="grade-edit-date" data-i18n="insertDate">Data Inserimento</label>
+            <input id="grade-edit-date" type="date" />
+          </div>
+          <div class="detail-actions">
+            <button class="secondary-button" type="submit" data-i18n="save">Salva</button>
+            <button id="cancel-grade-edit" class="ghost-button" type="button" data-i18n="cancel">Annulla</button>
+          </div>
+        </form>
+      </article>
+    </div>
+
+    <div id="language-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="language-title">
+      <article class="modal-panel language-panel">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow" data-i18n="language">Lingua</p>
+            <h2 id="language-title" data-i18n="chooseLanguage">Scegli Lingua</h2>
+          </div>
+          <button id="close-language" class="icon-button" type="button" aria-label="Chiudi Lingua">×</button>
+        </div>
+        <div id="language-list" class="choice-list"></div>
+      </article>
+    </div>
+
+    <div id="mode-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="mode-title">
+      <article class="modal-panel language-panel">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow" data-i18n="academicYear">Anno</p>
+            <h2 id="mode-title" data-i18n="chooseAcademicYear">Scegli Anno</h2>
+          </div>
+          <button id="close-mode" class="icon-button" type="button" aria-label="Chiudi Anno">×</button>
+        </div>
+        <form id="academic-year-form" class="modal-form academic-year-form">
+          <div class="field">
+            <label for="academic-year-name" data-i18n="newAcademicYear">Nuovo Anno</label>
+            <input id="academic-year-name" type="text" placeholder="2025/2026" required />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="academic-year-mode" data-i18n="registerType">Registro</label>
+              <select id="academic-year-mode">
+                <option value="school" data-i18n="schoolRegister">Scuola</option>
+                <option value="university" data-i18n="universityRegister">Università</option>
+              </select>
+            </div>
+            <button class="secondary-button" type="submit" data-i18n="create">Crea</button>
+          </div>
+        </form>
+        <div id="mode-list" class="choice-list"></div>
+      </article>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="/js/app.js" type="module"></script>
+  </body>
+</html>

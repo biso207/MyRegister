@@ -1,0 +1,9 @@
+# local database and runtime output
+data/*.sqlite3
+data/*.sqlite3-*
+__pycache__/
+*.py[cod]
+
+# editor and system files
+.DS_Store
+Thumbs.db
